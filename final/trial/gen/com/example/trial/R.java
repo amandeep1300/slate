@@ -202,8 +202,9 @@ public final class R {
         public static final int main=0x7f030006;
         public static final int mydialog=0x7f030007;
         public static final int popup_horizontal=0x7f030008;
-        public static final int popup_vertical=0x7f030009;
-        public static final int seek_bar_preference=0x7f03000a;
+        public static final int popup_menu=0x7f030009;
+        public static final int popup_vertical=0x7f03000a;
+        public static final int seek_bar_preference=0x7f03000b;
     }
     public static final class menu {
         public static final int menu=0x7f090000;

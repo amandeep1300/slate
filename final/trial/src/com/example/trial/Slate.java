@@ -1,7 +1,6 @@
 package com.example.trial;
 
 import java.io.*;
-
 import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.*;
 
@@ -9,7 +8,8 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import yuku.ambilwarna.AmbilWarnaDialog;
 import yuku.ambilwarna.AmbilWarnaDialog.OnAmbilWarnaListener;
-
+import com.example.trial.R;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -32,6 +32,7 @@ import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -49,6 +50,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -132,14 +134,26 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
      */
     AlertDialog.Builder dwdialog, ewdialog;
     /** Called when the activity is first created. */
+    
+    // below objects are used to display popup menu when save button is clicked
+    private LayoutInflater inflater;
+	private PopupWindow pw;
+	private View popupView;
+	
+	
     @Override
     public void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate(savedInstanceState);
         
+        // instanticating variables related to popup menu
+        inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		popupView = inflater.inflate(R.layout.popup_menu, null, false);
         // loading sound file
         sp = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
         explosion =  sp.load(this, R.raw.click, 1);
+        
+        // instantiating drawing panel
         dp = new DrawPanel(this); 
         
         //setting full screen mode
@@ -150,6 +164,8 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
         // getting screen height and width
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        
+        //calculating button sizes on horizontal layout and vertical layout
         int screenWidth = metrics.widthPixels;
         int screenHeight=metrics.heightPixels;
         int layoutsize=(int) (screenWidth*1/9);
@@ -175,6 +191,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
         RelativeLayout.LayoutParams p6 =new RelativeLayout.LayoutParams(hButtonSize,hButtonSize);
         p6.addRule(RelativeLayout.CENTER_HORIZONTAL);
       
+        // below code creates horizontal layout(menu bar)
         l=new RelativeLayout(this);
         l.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,hButtonSize));
         l.setBackgroundColor( Color.argb(175,238, 224, 229));
@@ -210,7 +227,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
         RelativeLayout.LayoutParams pt33 =new RelativeLayout.LayoutParams(layoutsize,layoutsize);
         pt33.addRule(RelativeLayout.ALIGN_PARENT_RIGHT); 
         
-        
+        // save button
         save = new Button(this);
         save.setLayoutParams(p6);
         save.setId(1);
@@ -221,7 +238,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
         save.setOnClickListener(this);
         
         
-        
+        // draw mode button
         draw_mode = new Button(this);
         draw_mode.setLayoutParams(p6);
         draw_mode.setId(2);
@@ -230,8 +247,9 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
         l12.setLayoutParams(pt22);
         l12.addView(draw_mode);
         draw_mode.setOnClickListener(this);
+        draw_mode.setOnLongClickListener(this);
         
-        
+        //erase mode button
         erase_mode = new Button(this);
         erase_mode.setLayoutParams(p6);
         erase_mode.setId(3);
@@ -240,9 +258,9 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
         l13.setLayoutParams(pt33);
         l13.addView(erase_mode);
         erase_mode.setOnClickListener(this);
+        erase_mode.setOnLongClickListener(this);
         
-        
-      
+        // previous page button
         previous_page = new Button(this);
         previous_page.setLayoutParams(p6);
         previous_page.setId(4);
@@ -252,6 +270,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
         l21.addView(previous_page);
         previous_page.setOnClickListener(this);
         
+        // next page button
         next_page = new Button(this);
         next_page.setLayoutParams(p6);
         next_page.setId(5);
@@ -261,6 +280,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
         l22.addView(next_page);
         next_page.setOnClickListener(this);
         
+        // a textview which shows present page number in which user is drawing
         pagesInfo = new TextView(this);
         pagesInfo.setText("1/1");
         pagesInfo.setTextColor(Color.BLACK);
@@ -273,6 +293,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
         l23.setLayoutParams(pt33);
         l23.addView(pagesInfo);
         
+        // a seekbar used scroll among pages
         pageScrollBar = new SeekBar(this);
         pageScrollBar.setMax(noOfPages-1);
         pageScrollBar.setId(7);
@@ -280,7 +301,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
         {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
             {
-                //Do something here with new value
+                // when user changes seekbar value, then current page number will be set to progress
             	pageNo = progress;
             	pagesInfo.setText("" + (pageNo+1) + "/" + noOfPages);
             }
@@ -296,7 +317,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
 			}
         });
         
-        RelativeLayout.LayoutParams p8 =new RelativeLayout.LayoutParams(layoutsize*3,layoutsize);
+        RelativeLayout.LayoutParams p8 =new RelativeLayout.LayoutParams(layoutsize*3-hButtonSize,hButtonSize);
         p8.addRule(RelativeLayout.CENTER_HORIZONTAL);
         pageScrollBar.setLayoutParams(p8);
        
@@ -311,20 +332,15 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
         l2.addView(l22);
         l2.addView(l23);
         
-        
-        
         l3.addView(pageScrollBar);
-        //l3.addView(l32);
-        //l3.addView(l33);
         
        
-        
-        
         l.addView(l1);
         l.addView(l2);
         l.addView(l3);
         
         
+        // below code creates a layout which is shown when user is in full screen mode
         RelativeLayout.LayoutParams m6 =new RelativeLayout.LayoutParams(hButtonSize,hButtonSize);
         m6.addRule(RelativeLayout.CENTER_HORIZONTAL);
        
@@ -340,7 +356,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
         
        
         
-        
+        // below code creates vertical layout(menu bar)
         RelativeLayout.LayoutParams n6 =new RelativeLayout.LayoutParams(vButtonSize,vButtonSize);
         n6.addRule(RelativeLayout.CENTER_VERTICAL);
         
@@ -481,14 +497,8 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
         mPaint = new Paint();
         mPaint.setDither(true);
         
-        /*
-        //below code gets preferences and sets those preferences
-        SharedPreferences getPrefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        foregroundColor = getPrefs.getInt("foregroundColor", 0xffffffff);
-        backgroundColor = getPrefs.getInt("backgroundColor", 0xff000000);
-        drawingWidth = getPrefs.getInt("drawingWidth", 10);
-        eraserWidth = getPrefs.getInt("eraserWidth", 20);
-        */
+        
+        // below code opens preferences file and restores previous settings
         preferences = getSharedPreferences(preferencesFileName, 0);
         foregroundColor = preferences.getInt("fcolor", 0xffffffff);
         backgroundColor = preferences.getInt("bcolor", 0xff000000);
@@ -523,7 +533,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
         dp.resume();
     }
     
-    //this method adds paths to current page
+    //this method adds paths that are drawn by user to current page
     public boolean onTouch(View v, MotionEvent me) 
     {
     	
@@ -544,16 +554,13 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
     	        }
     	        else if(me.getAction() == MotionEvent.ACTION_UP)
     	        {
-    	            //path.lineTo(me.getX(), me.getY());
-    	        	//p.getPath().lineTo(me.getX(), me.getY());
+    	           
     	        }
             }       
-    
-        
         return true;
     }
     
-    //This is the inner on which user actually draws
+    //This is the inner class on which user actually draws
     public class DrawPanel extends SurfaceView implements Runnable
     {
 
@@ -568,7 +575,8 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
             holder = getHolder();
         }
 
-        public void run() 
+        @SuppressLint("WrongCall")
+		public void run() 
         {
             // TODO Auto-generated method stub
             while( isItOk == true)
@@ -586,6 +594,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
             }
         }
 
+        // below method draws all paths on canvas screen
         @Override
         protected void onDraw(Canvas canvas) 
         {
@@ -638,9 +647,11 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
         }
     }
     
-    //This inner class is used to store all pages as a pdf
-    //It stores all pages as images and adds all images to a pdf, then removes all images
-    public class Save extends AsyncTask<String, Integer, String>
+    /*
+     * This inner class is used to create a thread which stores all pages as a pdf
+     * It stores all pages as images and adds all images to a pdf, then removes all images
+   	 */
+    public class SaveAsPdf extends AsyncTask<String, Integer, String>
 	{
 		ProgressDialog dialog;
 		
@@ -649,7 +660,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
 			dialog = new ProgressDialog(Slate.this);
 			dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 			dialog.setMax(100);
-			dialog.setTitle("Saving File");
+			dialog.setTitle("Saving PDF File");
 			
 			dialog.setMessage(folder + "/" + file + ".pdf");
 			dialog.show();
@@ -660,6 +671,8 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
 			
 			
 			int increment = 100/(2*noOfPages);
+			
+			// below code saves all pages as images in /mnt/slate folder
 			for(int i=1;i<=noOfPages;i++)
 	        {
 	        	
@@ -691,7 +704,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
             			
                 }
 	           
-     			File f = new File(folder, "page" + i +".png");
+     			File f = new File(folder, " " + file + i +".png");
      			FileOutputStream fos;
      			try 
      			{
@@ -714,7 +727,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
      				Toast.makeText(Slate.this, e.toString(), Toast.LENGTH_LONG).show();
      			}
 	        }
-//Code to save images as pdf
+			//Code to save images as pdf
 	        Document document=new Document();
 	        document.addTitle(file);
 			FileOutputStream fop = null;
@@ -737,11 +750,15 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
 			Image im;
 			int count;
 			
+			/*
+			 *  below code adds all images to created pdf document and deletes each image
+			 *  after it is added to the document
+			 */
 			try
 			{
 				for(count=1;count<=noOfPages;count++)
 				{
-					im = Image.getInstance(folder+"/page"+count+".png");
+					im = Image.getInstance(folder+"/" + " " + file +count+".png");
 					float w = im.getScaledWidth();
 					float h = im.getScaledHeight();
 					
@@ -753,7 +770,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
 					document.add(im);
 					
 					im.setSpacingAfter(10f);
-					File f = new File(folder, "page"+count+".png");
+					File f = new File(folder, " " + file + count + ".png");
 					f.delete();
 					publishProgress(increment);
 				}	
@@ -792,7 +809,105 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
 		}
 		protected void onPostExecute(String result)
 		{
-			Toast.makeText(Slate.this, "File Saved ", Toast.LENGTH_SHORT).show();
+			Toast.makeText(Slate.this, "File is Saved ", Toast.LENGTH_SHORT).show();
+					
+		}
+		
+	}
+
+    
+    /*
+     * This inner class is used to create a thread which stores all pages as .png images
+     */
+    public class SaveAsImages extends AsyncTask<String, Integer, String>
+	{
+		ProgressDialog dialog;
+		
+		protected void onPreExecute()
+		{
+			dialog = new ProgressDialog(Slate.this);
+			dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+			dialog.setMax(100);
+			dialog.setTitle("Saving Images");
+			
+			dialog.setMessage("images are being stored as " + folder + "/" + file + "1.png, " + folder + "/" + file + "2.png, .... ");
+			dialog.show();
+		}
+		@Override
+		protected String doInBackground(String... arg0) 
+		{
+			
+			
+			int increment = 100/(noOfPages);
+			
+			// below code saves all pages as images in /mnt/slate folder
+			for(int i=1;i<=noOfPages;i++)
+	        {
+	        	
+	        
+		        Bitmap returnedBitmap = Bitmap.createBitmap(dp.getWidth(), dp.getHeight(),Bitmap.Config.ARGB_8888);
+	            //Drawable bgDrawable =fl.getBackground();
+	           
+	               // bgDrawable.draw(canvas);
+	            Canvas canvas = new Canvas(returnedBitmap);
+	            dp.draw(canvas);
+	            canvas.drawColor(backgroundColor);
+	            
+	      
+	            for (CWPath pth : pointsToDraw.get(i-1)) 
+            	{
+            		
+            		if(pth.getDrawMode())
+            		{
+            			mPaint.setStrokeWidth(pth.getPathWidth());
+            			mPaint.setColor(pth.getPathColor());
+            		}
+            		else
+            		{
+            			mPaint.setStrokeWidth(pth.getEraserWidth());
+            			mPaint.setColor(backgroundColor);
+            		}
+            		
+            		canvas.drawPath(pth.getPath(), mPaint);
+            			
+                }
+	           
+     			File f = new File(folder,  file + i +".png");
+     			FileOutputStream fos;
+     			try 
+     			{
+     				fos = new FileOutputStream(f);
+     				returnedBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+     				fos.close();
+     				publishProgress(increment);
+     				//Toast.makeText(Slate.this, file.toString(), Toast.LENGTH_LONG).show();
+		            
+     			} 
+     			catch (FileNotFoundException e) 
+     			{
+     				Log.e("Panel", "FileNotFoundException", e);
+     				Toast.makeText(Slate.this, e.toString(), Toast.LENGTH_LONG).show();
+     				
+     			} 
+     			catch (IOException e)
+     			{
+     				Log.e("Panel", "IOEception", e);
+     				Toast.makeText(Slate.this, e.toString(), Toast.LENGTH_LONG).show();
+     			}
+	        }
+			
+			dialog.setProgress(100);
+			dialog.dismiss();
+			return null;
+		}
+		
+		protected void onProgressUpdate(Integer...progress)
+		{
+			dialog.incrementProgressBy(progress[0]);
+		}
+		protected void onPostExecute(String result)
+		{
+			Toast.makeText(Slate.this, "Images are Saved ", Toast.LENGTH_SHORT).show();
 					
 		}
 		
@@ -808,105 +923,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
 		{
 			//save
 			case 1:
-				AlertDialog.Builder fileNameInputDialog = new AlertDialog.Builder(this);
-				fileNameInputDialog.setTitle("FILE NAME");
-				//alert.setMessage("enter file name to save as a pdf file");
-				final EditText name = new EditText(this);
-				fileNameInputDialog.setView(name);
-				fileNameInputDialog.setPositiveButton("save", new DialogInterface.OnClickListener()
-				{
-					public void onClick(DialogInterface dialog, int whichButton)
-					{
-						 file = name.getText().toString();
-						boolean isNameOk = validateFileName(file);
-						if(isNameOk)
-						{
-							 
-							File direct = new File(folder);
-					        if(!direct.exists())
-					         {
-					        	 Toast.makeText(Slate.this, "directory is not present" , Toast.LENGTH_SHORT).show();
-					             if(direct.mkdir())
-					             {
-					            	 Toast.makeText(Slate.this, "directory  created" , Toast.LENGTH_SHORT).show();
-					            	 //directory is created;
-					             }
-					             else
-					             {
-					            	 Toast.makeText(Slate.this, "unable to create directory" , Toast.LENGTH_SHORT).show();
-					            	 
-					             }
-
-					         }
-					        boolean isAFileWithSameNameAlreadyExist = false;
-					        FileInputStream fis = null;
-					        try
-					        {
-					        	fis = new FileInputStream(folder+"/" + file + ".pdf");
-					        	isAFileWithSameNameAlreadyExist = true;
-					        	fis.close();
-					        }
-					        catch(FileNotFoundException e)
-					        {
-					        	
-					        }
-					        catch(IOException e)
-					        {
-					        	
-					        }
-					        if(!isAFileWithSameNameAlreadyExist)
-					        {
-					        	new Save().execute();
-					        	
-					        }
-					        else
-					        {
-								AlertDialog.Builder fileOverWriteDialog  = new AlertDialog.Builder(Slate.this);
-								fileOverWriteDialog.setMessage("Another file already exists with name " + file + ".pdf\nDo you want to overwrite it?");
-								fileOverWriteDialog.setPositiveButton("ok", new DialogInterface.OnClickListener()
-								{
-									public void onClick(DialogInterface dialog, int whichBtton)
-									{
-										new Save().execute();
-									}
-								});
-								fileOverWriteDialog.setNegativeButton("cancel", new DialogInterface.OnClickListener()
-								{
-									public void onClick(DialogInterface dialog, int whichBtton)
-									{
-										
-									}
-								});
-								fileOverWriteDialog.show();
-					       }
-						}
-						else
-						{
-							AlertDialog.Builder invalidFileNameDialog  = new AlertDialog.Builder(Slate.this);
-							invalidFileNameDialog.setTitle("Invalid File Name");
-							TextView rules = new TextView(Slate.this);
-							rules.setText("1. Empty name is not allowed.\n2. Space at the beginning of a file name is not allowed.\n3. New line in filname is not allowed.");
-							invalidFileNameDialog.setView(rules);
-							invalidFileNameDialog.setPositiveButton("ok", new DialogInterface.OnClickListener()
-							{
-								public void onClick(DialogInterface dialog, int whichBtton)
-								{
-									save.callOnClick();
-								}
-							});
-							invalidFileNameDialog.show();
-							
-						}
-					}
-				});
-				fileNameInputDialog.setNegativeButton("cancel", new DialogInterface.OnClickListener()
-				{
-					public void onClick(DialogInterface dialog, int whichBtton)
-					{
-						
-					}
-				});
-				fileNameInputDialog.show();
+				showPopup(save);
 				break;
 			//draw mode
 			case 2:
@@ -955,6 +972,10 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
 				break;	
 			//full screen
 			case 11:
+				/*
+				 *  below code sets horizontal layout height to 0, vertical layout width to 0
+				 *  full screen layout height from o to horizontal button size
+				 */
 				LayoutParams p1 = l.getLayoutParams();
 				p1.height = 0;
 				l.setLayoutParams(p1);
@@ -967,6 +988,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
 				break;
 			//erase all
 			case 12:
+				// below code sets current page to an empty array list of paths
 				pointsToDraw.set(pageNo, new ArrayList<CWPath>());
 				break;
 			//foreground color
@@ -974,7 +996,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
 				AmbilWarnaDialog fcdialog = new AmbilWarnaDialog(Slate.this, foregroundColor, new OnAmbilWarnaListener() {
  	               public void onOk(AmbilWarnaDialog dialog, int color) 
  	               {
- 	                        // color is the color selected by the user.
+ 	                   
  	            	  SharedPreferences.Editor editor = preferences.edit();
  	            	  editor.putInt("fcolor", color);
  	            	  editor.commit();
@@ -983,7 +1005,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
  	                        
  	                //@Override
  	                public void onCancel(AmbilWarnaDialog dialog) {
- 	                        // cancel was selected by the user
+ 	                       
  	                }
  	        });
 
@@ -994,7 +1016,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
 				AmbilWarnaDialog bcdialog = new AmbilWarnaDialog(Slate.this,backgroundColor, new OnAmbilWarnaListener() {
 	 	               public void onOk(AmbilWarnaDialog dialog, int color) 
 	 	               {
-	 	                        // color is the color selected by the user.
+	 	                  
 	 	            	  SharedPreferences.Editor editor = preferences.edit();
 	 	            	  editor.putInt("bcolor", color);
 	 	            	  editor.commit();
@@ -1009,75 +1031,16 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
 
 	 	        bcdialog.show();
 				break;
-			//drawing width
-			case 15:
-				
-				
-				AlertDialog.Builder dwdialog  = new AlertDialog.Builder(Slate.this);
-				dwdialog.setTitle("Drawing Width");
-				
-				final SeekBar dwseekbar = new SeekBar(this);
-				
-				dwseekbar.setProgress(drawingWidth);
-				dwseekbar.setMax(100);
-				dwdialog.setView(dwseekbar);
-				dwdialog.setPositiveButton("ok", new DialogInterface.OnClickListener()
-				{
-					public void onClick(DialogInterface dialog, int whichBtton)
-					{
-						SharedPreferences.Editor editor = preferences.edit();
-	 	            	editor.putInt("dwidth", dwseekbar.getProgress());
-	 	            	editor.commit();
-	 	            	drawingWidth = dwseekbar.getProgress();
-					}
-				});
-				dwdialog.setNegativeButton("cancel", new DialogInterface.OnClickListener()
-				{
-					public void onClick(DialogInterface dialog, int whichBtton)
-					{
-						
-					}
-				});
-				dwdialog.show();
-				break;
-			//eraser width
-			case 16:
-				 AlertDialog.Builder ewdialog  = new AlertDialog.Builder(Slate.this);
-				ewdialog.setTitle("Eraser Width");
-				
-				final SeekBar ewseekbar = new SeekBar(this);
-				
-				ewseekbar.setProgress(eraserWidth);
-				ewseekbar.setMax(100);
-				ewdialog.setView(ewseekbar);
-				ewdialog.setPositiveButton("ok", new DialogInterface.OnClickListener()
-				{
-					public void onClick(DialogInterface dialog, int whichBtton)
-					{
-						SharedPreferences.Editor editor = preferences.edit();
-	 	            	editor.putInt("ewidth", ewseekbar.getProgress());
-	 	            	editor.commit();
-	 	            	eraserWidth = ewseekbar.getProgress();
-					}
-				});
-				ewdialog.setNegativeButton("cancel", new DialogInterface.OnClickListener()
-				{
-					public void onClick(DialogInterface dialog, int whichBtton)
-					{
-						
-					}
-				});
-				ewdialog.show();
-				break;
+			
 			//add new page
-			case 17:
+			case 15:
 				pointsToDraw.add(new ArrayList<CWPath>());
 				noOfPages++;
 				//Toast.makeText(this, "New page has been added successfully.", Toast.LENGTH_SHORT).show();
 				updatePagesInfo();
 				break;
 			//delete page
-			case 18:
+			case 16:
 				if(noOfPages == 1)
 				{
 					//Toast.makeText(this, "You have only one page. It can't be deleted.", Toast.LENGTH_SHORT).show();
@@ -1116,7 +1079,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
 		
 	}
 	
-	
+	// below method validates file name
 	public boolean validateFileName(String fileName)
 	{
 		if(fileName.equals(""))
@@ -1133,6 +1096,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
 			return true;
 	}
 	
+	// below method updates pagesInfo textview text to current page number
 	public void updatePagesInfo()
 	{
 		pagesInfo.setText("" + (pageNo+1) + "/" + noOfPages);
@@ -1141,9 +1105,328 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
 		
 	}
 
-
-	public boolean onLongClick(View arg0) {
-		// TODO Auto-generated method stub
+	/*
+	 * (non-Javadoc)
+	 * @see android.view.View.OnLongClickListener#onLongClick(android.view.View)
+	 */
+	public boolean onLongClick(View v) 
+	{
+		switch(v.getId())
+		{
+			//drawing width
+			case 2:
+				AlertDialog.Builder dwdialog  = new AlertDialog.Builder(Slate.this);
+				dwdialog.setTitle("Drawing Width");
+				final SeekBar dwseekbar = new SeekBar(this);
+				dwseekbar.setProgress(drawingWidth);
+				dwseekbar.setMax(100);
+				dwdialog.setView(dwseekbar);
+				dwdialog.setPositiveButton("ok", new DialogInterface.OnClickListener()
+				{
+					public void onClick(DialogInterface dialog, int whichBtton)
+					{
+						SharedPreferences.Editor editor = preferences.edit();
+	 	            	editor.putInt("dwidth", dwseekbar.getProgress());
+	 	            	editor.commit();
+	 	            	drawingWidth = dwseekbar.getProgress();
+					}
+				});
+				dwdialog.setNegativeButton("cancel", new DialogInterface.OnClickListener()
+				{
+					public void onClick(DialogInterface dialog, int whichBtton)
+					{
+						
+					}
+				});
+				dwdialog.show();
+				break;
+			//eraser width
+			case 3:
+				 AlertDialog.Builder ewdialog  = new AlertDialog.Builder(Slate.this);
+				ewdialog.setTitle("Eraser Width");
+				
+				final SeekBar ewseekbar = new SeekBar(this);
+				
+				ewseekbar.setProgress(eraserWidth);
+				ewseekbar.setMax(100);
+				ewdialog.setView(ewseekbar);
+				ewdialog.setPositiveButton("ok", new DialogInterface.OnClickListener()
+				{
+					public void onClick(DialogInterface dialog, int whichBtton)
+					{
+						SharedPreferences.Editor editor = preferences.edit();
+	 	            	editor.putInt("ewidth", ewseekbar.getProgress());
+	 	            	editor.commit();
+	 	            	eraserWidth = ewseekbar.getProgress();
+					}
+				});
+				ewdialog.setNegativeButton("cancel", new DialogInterface.OnClickListener()
+				{
+					public void onClick(DialogInterface dialog, int whichBtton)
+					{
+						
+					}
+				});
+				ewdialog.show();
+				break;
+		}
 		return false;
+	}
+	
+	/*
+	 * this method is called when save button is clicked
+	 * this method shows a popup menu 
+	 * when user clicks on save as pdf savdAsPdf(View v) method will be called
+	 * when user clicks on save as images savdAsImages(View v) method will be called
+	 */
+	public void showPopup(View view) 
+	{
+		pw = new PopupWindow(getApplicationContext());
+		pw.setTouchable(true);
+		pw.setFocusable(true);
+		pw.setOutsideTouchable(true);
+		pw.setTouchInterceptor(new OnTouchListener() {
+			public boolean onTouch(View v, MotionEvent event) {
+				if (event.getAction() == MotionEvent.ACTION_OUTSIDE) {
+					pw.dismiss();
+
+					return true;
+				}
+
+				return false;
+			}
+		});
+		pw.setWidth(WindowManager.LayoutParams.WRAP_CONTENT);
+		pw.setHeight(WindowManager.LayoutParams.WRAP_CONTENT);
+		pw.setOutsideTouchable(false);
+		pw.setContentView(popupView);
+		pw.showAsDropDown(view, 0, 0);
+	}
+
+	/*
+	 * below method shows a dialog box to take file name and validates that file name.
+	 * If file name is valid, then it calls SaveAsPdf inner class to save as a PDF File 
+	 */
+	public void saveAsPdf(View v)
+	{
+		final View view = v;
+		pw.dismiss();
+		AlertDialog.Builder fileNameInputDialog = new AlertDialog.Builder(this);
+		fileNameInputDialog.setTitle("FILE NAME");
+		//alert.setMessage("enter file name to save as a pdf file");
+		final EditText name = new EditText(this);
+		fileNameInputDialog.setView(name);
+		fileNameInputDialog.setPositiveButton("save", new DialogInterface.OnClickListener()
+		{
+			public void onClick(DialogInterface dialog, int whichButton)
+			{
+				 file = name.getText().toString();
+				boolean isNameOk = validateFileName(file);
+				if(isNameOk)
+				{
+					 
+					File direct = new File(folder);
+			        if(!direct.exists())
+			         {
+			        	 Toast.makeText(Slate.this, "directory is not present" , Toast.LENGTH_SHORT).show();
+			             if(direct.mkdir())
+			             {
+			            	 Toast.makeText(Slate.this, "directory  created" , Toast.LENGTH_SHORT).show();
+			            	 //directory is created;
+			             }
+			             else
+			             {
+			            	 Toast.makeText(Slate.this, "unable to create directory" , Toast.LENGTH_SHORT).show();
+			            	 
+			             }
+
+			         }
+			        boolean isAFileWithSameNameAlreadyExist = false;
+			        FileInputStream fis = null;
+			        try
+			        {
+			        	fis = new FileInputStream(folder+"/" + file + ".pdf");
+			        	isAFileWithSameNameAlreadyExist = true;
+			        	fis.close();
+			        }
+			        catch(FileNotFoundException e)
+			        {
+			        	
+			        }
+			        catch(IOException e)
+			        {
+			        	
+			        }
+			        if(!isAFileWithSameNameAlreadyExist)
+			        {
+			        	new SaveAsPdf().execute();
+			        	
+			        }
+			        else
+			        {
+						AlertDialog.Builder fileOverWriteDialog  = new AlertDialog.Builder(Slate.this);
+						fileOverWriteDialog.setMessage("Another file already exists with name " + file + ".pdf\nDo you want to overwrite it?");
+						fileOverWriteDialog.setPositiveButton("ok", new DialogInterface.OnClickListener()
+						{
+							public void onClick(DialogInterface dialog, int whichBtton)
+							{
+								new SaveAsPdf().execute();
+							}
+						});
+						fileOverWriteDialog.setNegativeButton("cancel", new DialogInterface.OnClickListener()
+						{
+							public void onClick(DialogInterface dialog, int whichBtton)
+							{
+								saveAsPdf(view);
+							}
+						});
+						fileOverWriteDialog.show();
+			       }
+				}
+				else
+				{
+					AlertDialog.Builder invalidFileNameDialog  = new AlertDialog.Builder(Slate.this);
+					invalidFileNameDialog.setTitle("Invalid File Name");
+					TextView rules = new TextView(Slate.this);
+					rules.setText("1. Empty name is not allowed.\n2. Space at the beginning of a file name is not allowed.\n3. New line in filname is not allowed.");
+					invalidFileNameDialog.setView(rules);
+					invalidFileNameDialog.setPositiveButton("ok", new DialogInterface.OnClickListener()
+					{
+						@SuppressLint("NewApi")
+						public void onClick(DialogInterface dialog, int whichBtton)
+						{
+							saveAsPdf(view);
+						}
+					});
+					invalidFileNameDialog.show();
+					
+				}
+			}
+		});
+		fileNameInputDialog.setNegativeButton("cancel", new DialogInterface.OnClickListener()
+		{
+			public void onClick(DialogInterface dialog, int whichBtton)
+			{
+				
+			}
+		});
+		fileNameInputDialog.show();
+		
+	}
+	
+	/*
+	 * below method shows a dialog box to take file name and validates that file name.
+	 * If file name is valid, then it call SaveAsImages inner class to save as images 
+	 */
+	public void saveAsImages(View v)
+	{
+		final View view = v;
+		pw.dismiss();
+		AlertDialog.Builder fileNameInputDialog = new AlertDialog.Builder(this);
+		fileNameInputDialog.setTitle("FILE NAME");
+		//alert.setMessage("enter file name to save as a pdf file");
+		final EditText name = new EditText(this);
+		fileNameInputDialog.setView(name);
+		
+		fileNameInputDialog.setPositiveButton("save", new DialogInterface.OnClickListener()
+		{
+			public void onClick(DialogInterface dialog, int whichButton)
+			{
+				 file = name.getText().toString();
+				boolean isNameOk = validateFileName(file);
+				if(isNameOk)
+				{
+					 
+					File direct = new File(folder);
+			        if(!direct.exists())
+			         {
+			        	 Toast.makeText(Slate.this, "directory is not present" , Toast.LENGTH_SHORT).show();
+			             if(direct.mkdir())
+			             {
+			            	 Toast.makeText(Slate.this, "directory  created" , Toast.LENGTH_SHORT).show();
+			            	 //directory is created;
+			             }
+			             else
+			             {
+			            	 Toast.makeText(Slate.this, "unable to create directory" , Toast.LENGTH_SHORT).show();
+			            	 
+			             }
+
+			         }
+			        boolean isAFileWithSameNameAlreadyExist = false;
+			        FileInputStream fis = null;
+			        try
+			        {
+			        	fis = new FileInputStream(folder+"/" + file + "1" + ".png");
+			        	isAFileWithSameNameAlreadyExist = true;
+			        	fis.close();
+			        }
+			        catch(FileNotFoundException e)
+			        {
+			        	
+			        }
+			        catch(IOException e)
+			        {
+			        	
+			        }
+			        if(!isAFileWithSameNameAlreadyExist)
+			        {
+			        	new SaveAsImages().execute();
+			        	
+			        }
+			        else
+			        {
+						AlertDialog.Builder fileOverWriteDialog  = new AlertDialog.Builder(Slate.this);
+						fileOverWriteDialog.setMessage("Some images are already stored with name " + file + "\nDo you want to overwrite them?");
+						fileOverWriteDialog.setPositiveButton("ok", new DialogInterface.OnClickListener()
+						{
+							public void onClick(DialogInterface dialog, int whichBtton)
+							{
+								new SaveAsImages().execute();
+							}
+						});
+						fileOverWriteDialog.setNegativeButton("cancel", new DialogInterface.OnClickListener()
+						{
+							public void onClick(DialogInterface dialog, int whichBtton)
+							{
+								saveAsImages(view);
+							}
+						});
+						fileOverWriteDialog.show();
+			       }
+				}
+				else
+				{
+					AlertDialog.Builder invalidFileNameDialog  = new AlertDialog.Builder(Slate.this);
+					invalidFileNameDialog.setTitle("Invalid File Name");
+					TextView rules = new TextView(Slate.this);
+					rules.setText("1. Empty name is not allowed.\n2. Space at the beginning of a file name is not allowed.\n3. New line in filname is not allowed.");
+					invalidFileNameDialog.setView(rules);
+					invalidFileNameDialog.setPositiveButton("ok", new DialogInterface.OnClickListener()
+					{
+						@SuppressLint("NewApi")
+						public void onClick(DialogInterface dialog, int whichBtton)
+						{
+							saveAsImages(view);
+						}
+					});
+					invalidFileNameDialog.show();
+					
+				}
+			}
+		});
+		fileNameInputDialog.setNegativeButton("cancel", new DialogInterface.OnClickListener()
+		{
+			public void onClick(DialogInterface dialog, int whichBtton)
+			{
+				
+			}
+		});
+		fileNameInputDialog.show();
+	}
+	
+	public void onBackPressed()
+	{
+		finish();
 	}
 }

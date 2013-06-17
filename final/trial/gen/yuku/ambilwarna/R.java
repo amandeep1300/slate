@@ -7,30 +7,30 @@
 package yuku.ambilwarna;
 
 public final class R {
+	public static final class dimen {
+		public static final int ambilwarna_hsvHeight = 0x7f060000;
+		public static final int ambilwarna_hsvWidth = 0x7f060001;
+		public static final int ambilwarna_hueWidth = 0x7f060002;
+		public static final int ambilwarna_spacer = 0x7f060003;
+	}
+	public static final class drawable {
+		public static final int ambilwarna_arrow_down = 0x7f020005;
+		public static final int ambilwarna_arrow_right = 0x7f020006;
+		public static final int ambilwarna_cursor = 0x7f020007;
+		public static final int ambilwarna_hue = 0x7f020008;
+		public static final int ambilwarna_target = 0x7f020009;
+	}
 	public static final class id {
-		public static final int ambilwarna_viewContainer = 0x7f0a0005;
-		public static final int ambilwarna_warnaBaru = 0x7f0a000c;
-		public static final int ambilwarna_state = 0x7f0a000a;
-		public static final int ambilwarna_warnaLama = 0x7f0a000b;
-		public static final int ambilwarna_target = 0x7f0a0009;
-		public static final int ambilwarna_viewHue = 0x7f0a0007;
 		public static final int ambilwarna_cursor = 0x7f0a0008;
+		public static final int ambilwarna_state = 0x7f0a000a;
+		public static final int ambilwarna_target = 0x7f0a0009;
+		public static final int ambilwarna_viewContainer = 0x7f0a0005;
+		public static final int ambilwarna_viewHue = 0x7f0a0007;
 		public static final int ambilwarna_viewSatBri = 0x7f0a0006;
+		public static final int ambilwarna_warnaBaru = 0x7f0a000c;
+		public static final int ambilwarna_warnaLama = 0x7f0a000b;
 	}
 	public static final class layout {
 		public static final int ambilwarna_dialog = 0x7f030003;
-	}
-	public static final class drawable {
-		public static final int ambilwarna_arrow_right = 0x7f020006;
-		public static final int ambilwarna_hue = 0x7f020008;
-		public static final int ambilwarna_arrow_down = 0x7f020005;
-		public static final int ambilwarna_target = 0x7f020009;
-		public static final int ambilwarna_cursor = 0x7f020007;
-	}
-	public static final class dimen {
-		public static final int ambilwarna_hsvWidth = 0x7f060001;
-		public static final int ambilwarna_spacer = 0x7f060003;
-		public static final int ambilwarna_hsvHeight = 0x7f060000;
-		public static final int ambilwarna_hueWidth = 0x7f060002;
 	}
 }
