@@ -832,7 +832,7 @@ public class MainActivity extends Activity {
     
     private void InitializePaint()
     {
-    	mPaint.setDither(true); /* Helper for setFlags(), setting or clearing the DITHER_FLAG bit Dithering affects how colors that are higher precision than the device are down-sampled. */
+    	mPaint.setDither(true);
 	        
 	    mPaint.setColor(Color.rgb(100, 100,100));
 
@@ -851,9 +851,9 @@ public class MainActivity extends Activity {
 
 private void LaunchColorPicker(){
 	Intent launchcolorpicker = new Intent();
-	launchcolorpicker.setClassName("com.example.trial", "com.example.trial.ColorPicker"); // calling activity colorpicker
+	launchcolorpicker.setClassName("com.example.trial", "com.example.trial.ColorPicker");
 	launchcolorpicker.setAction("com.example.trial.android.intent.action.COLORPICKER");
-	launchcolorpicker.addCategory("CATEGORY_DEFAULT"); // adding default color setting
+	launchcolorpicker.addCategory("CATEGORY_DEFAULT");
 	launchcolorpicker.setType("vnd.somitsolutions.color/vnd.somitsolutions.color-value");
 	
 	try {
@@ -866,12 +866,10 @@ private void LaunchColorPicker(){
 }
 
 public void onActivityResult(int requestcode, int resultcode, Intent result ) {
-  
-
-   // color of the shape	
+	
 	if(requestcode == REQUEST_CODE){
     	if(resultcode == RESULT_OK){
-    		color[0] = (result.getDoubleArrayExtra("com.example.trial.colorpicker.color_of_the_shape"))[0]; 
+    		color[0] = (result.getDoubleArrayExtra("com.example.trial.colorpicker.color_of_the_shape"))[0];
     		color[1] = (result.getDoubleArrayExtra("com.example.trial.colorpicker.color_of_the_shape"))[1];
     		color[2] = (result.getDoubleArrayExtra("com.example.trial.colorpicker.color_of_the_shape"))[2];
     		
@@ -901,7 +899,7 @@ public void onActivityResult(int requestcode, int resultcode, Intent result ) {
         @Override
         public boolean onTouchEvent(MotionEvent event) {
         	
-        	isFileAlreadySaved = false; // checking if image is already solved
+        	isFileAlreadySaved = false;
 	        	synchronized (_thread.getSurfaceHolder()) {
 	        		
 	        		if(event.getAction() == MotionEvent.ACTION_DOWN){
@@ -922,7 +920,6 @@ public void onActivityResult(int requestcode, int resultcode, Intent result ) {
 	        			if(!flag)
 	        			{
 	        			
-                                       // if shape menu is clicked
 	        			if(shapemenuclicked == true){
 		        			
 		        			if(ShapeObject_to_be_created == ShapeLine)
@@ -933,25 +930,20 @@ public void onActivityResult(int requestcode, int resultcode, Intent result ) {
 		        			if(ShapeObject_to_be_created == ShapeFreehand)
 		        			{	
 		        				currentGraphicObject = new FreeHand();
-
-                                                       // here its checking the x and y point and drawing line according to thar
 		        				((FreeHand)currentGraphicObject).getPath().moveTo(event.getX(), event.getY());
 		
 		        				((FreeHand)currentGraphicObject).getPath().lineTo(event.getX(), event.getY());
 		        				
 		        			}
-                                                // if the shape is rectangle
 		        			if(ShapeObject_to_be_created == ShapeRect)
 		        			{	
 		        				
 		        				currentGraphicObject = new Rectangle();
 		        			}
-                                                 // if shape is circle
 		        			if(ShapeObject_to_be_created == ShapeCircle)
 		        			{	
 		        				currentGraphicObject = new Circle();
 		        			}
-                                                 // if shape s oval
 		        			if(ShapeObject_to_be_created == ShapeOval)
 		        			{
 		        				currentGraphicObject = new Oval();
@@ -997,12 +989,10 @@ public void onActivityResult(int requestcode, int resultcode, Intent result ) {
 		        				
 		        			}
 	        			}*/
-
-                                     // below code is calculating the figure drawn by the user
 	        			if(wasClickedInside)
 	        			{
-	        			displacementX=(int) (event.getX()-thisarea.p1.getX()); // getting get x-axis
-    					displacementY=(int) (event.getY()-thisarea.p1.getY()); // getting y-axis
+	        			displacementX=(int) (event.getX()-thisarea.p1.getX());
+    					displacementY=(int) (event.getY()-thisarea.p1.getY());
     					preDisplacementX=displacementX;
     					preDisplacementY=displacementY;
     					if(checkcontain.p2.getX()!=0)
@@ -1026,7 +1016,6 @@ public void onActivityResult(int requestcode, int resultcode, Intent result ) {
 							break;
 						}
 						case 1:
-                                         // below code is used to calculate the radius of circle and drawwing according to it
 						{
 							float radius = ((Circle)checkcontain.graphicInThis).getRadius();
     						checkcontain.graphicInThis.reset();
@@ -1038,13 +1027,11 @@ public void onActivityResult(int requestcode, int resultcode, Intent result ) {
 							
 							break;
 						}
-                                           //  below code is used to calculate the oval dran by the user
 						case 2:
 						{
 							checkcontain.graphicInThis.reset();
-							// getting one end of the oval
-							((Oval)checkcontain.graphicInThis).getoneEndOfTheOval().setX(checkcontain.p1.getX()+displacementX);              
-                                                      // getting y axis of the oval
+							
+							((Oval)checkcontain.graphicInThis).getoneEndOfTheOval().setX(checkcontain.p1.getX()+displacementX);
 	        				((Oval)checkcontain.graphicInThis).getoneEndOfTheOval().setY(checkcontain.p1.getY()+displacementY);
 	        				float tempX = ((Oval)checkcontain.graphicInThis).getoneEndOfTheOval().getX();
     						float tempY = ((Oval)checkcontain.graphicInThis).getoneEndOfTheOval().getY();
@@ -1055,8 +1042,7 @@ public void onActivityResult(int requestcode, int resultcode, Intent result ) {
     							((Oval)checkcontain.graphicInThis).getRectangle().set(tempX,tempY1,tempX1,tempY);	
     							((Oval)checkcontain.graphicInThis).getPath().addCircle((tempX+tempX1)/2, tempY1-10, 10,Path.Direction.CW);
     							((Oval)checkcontain.graphicInThis).getPath().addCircle((tempX+tempX1)/2, tempY+10, 10,Path.Direction.CW);
-    						} 
-                                                // formula for drawing eclipse
+    						}
         				
     						if(tempX<=tempX1 && tempY<=tempY1)
     						{
@@ -1091,7 +1077,6 @@ public void onActivityResult(int requestcode, int resultcode, Intent result ) {
 						}
 						case 3:
 						{
-                                                        // in this code we are calculating the rectangle drawn by the user
 							Point temp = new Point(checkcontain.p1.getX()+displacementX,checkcontain.p1.getY()+displacementY);
 							((Rectangle) checkcontain.graphicInThis).settemppointOfOneEndRectangle(temp);
 							float tempX = ((Rectangle) checkcontain.graphicInThis).gettemppointOfOneEndRectangle().getX();
@@ -1133,9 +1118,7 @@ public void onActivityResult(int requestcode, int resultcode, Intent result ) {
 							break;
 						}
     					}
-    					 
-
-                                       // assigning the color i.e back ground color
+    					
     					switch(checkColor)
         				{
         				case 1:
@@ -1161,9 +1144,7 @@ public void onActivityResult(int requestcode, int resultcode, Intent result ) {
         				}
 	        		}
 	        		}
-	        		 
-
-                               // now when we released the button its calculating the total displacement
+	        		
 	        		
 	        		else if(event.getAction() == MotionEvent.ACTION_UP){
 	        		
@@ -1188,10 +1169,9 @@ public void onActivityResult(int requestcode, int resultcode, Intent result ) {
 	        				
 	        				if(shapemenuclicked == true )
 	        				{
-	        			    PhonePhone
+	        			    
 		        			
 	        					if(ShapeObject_to_be_created == ShapeLine)
-                                                         // in this code its calculating the line 
 	        					{	
 	        						((Line) currentGraphicObject).getBegin().setX(thisarea.p1.getX());
 			        				
@@ -1211,9 +1191,8 @@ public void onActivityResult(int requestcode, int resultcode, Intent result ) {
 	        						//thiszre
 		            			
 	        					}
-		        			    
-
-		        			         // in this code its calculating the free hand 
+		        			
+		        			
 	        					if(ShapeObject_to_be_created == ShapeFreehand)
 	        					{
 	        						((FreeHand)currentGraphicObject).getPath().lineTo(event.getX(), event.getY());
@@ -1223,8 +1202,6 @@ public void onActivityResult(int requestcode, int resultcode, Intent result ) {
 	        						//thisarea.obj=4;//0-line,1-circle,2-oval,3-rectangle 4 free hand
 		        				
 	        					}
-
-                                                      // in this code its calculating the rectangle
 	        					if(ShapeObject_to_be_created == ShapeRect)
 	        					{
 	        						Point temp = new Point(thisarea.p1.getX(),thisarea.p1.getY());
@@ -1263,7 +1240,6 @@ public void onActivityResult(int requestcode, int resultcode, Intent result ) {
 	        						thisarea.obj=3;//0-line,1-circle,2-oval,3-rectangle 4 free hand
 		        				
 	        					}
-                                                 // in this code its calculating the circle drawn using diameter
 	        					if(ShapeObject_to_be_created == ShapeCircle)
 	        					{
 	        						((Circle)currentGraphicObject).getOneEndOfTheCircle().setX(thisarea.p1.getX());
@@ -1290,8 +1266,6 @@ public void onActivityResult(int requestcode, int resultcode, Intent result ) {
 	        						thisarea.graphicInThis=currentGraphicObject;
 	        						thisarea.obj=1;//0-line,1-circle,2-oval,3-rectangle 4 free hand
 	        					}
-
-                                                      // In this code its calculating the oval drawn by the user
 	        					if(ShapeObject_to_be_created == ShapeOval)
 	        					{	
 	        						((Oval)currentGraphicObject).getoneEndOfTheOval().setX(thisarea.p1.getX());
@@ -1341,7 +1315,6 @@ public void onActivityResult(int requestcode, int resultcode, Intent result ) {
 	        					}
 	        					 coveredarea.add(thisarea);
 	        				}
-                                              // for setting the color when the button is released
 	        				switch(checkColor)
 	        				{
 	        				case 1:

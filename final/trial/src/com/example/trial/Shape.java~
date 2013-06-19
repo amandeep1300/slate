@@ -32,8 +32,7 @@ public class Shape extends Object{
 	    	{
 	    		path_of_shape=new Path();
 	    	}
-	    	 
-               // here we are setting the color 
+	    	
 	    	public void setrgb(int red, int green, int blue){
 	    		color_rgb[0] = red;
 	    		color_rgb[1] = green;
@@ -43,8 +42,7 @@ public class Shape extends Object{
 	    	public int[] getrgb(){
 	    		return color_rgb;
 	    	}
-                 
-  	    	// setting the stroke width
+	    	
 	    	public void setStrokeWidth(float w){
 	    		strokeWidth = w;
 	    	}

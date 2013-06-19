@@ -6,8 +6,6 @@ import com.example.trial.*;
 
 @SuppressWarnings("unused")
 public class Point {
-
-// In this code we are just returning x and y points
 	
 	private float _x ;
     private float _y;

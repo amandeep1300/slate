@@ -8,11 +8,10 @@ public class Oval extends Shape {
 	private Point oneEndOfTheOval;
 	public Oval(){
 		super();
-		r = new RectF(); // Create a new empty RectF.
+		r = new RectF();
 		oneEndOfTheOval = new Point();
 	}
 	
-        // getting the coordinates of the rectangle
 	public RectF getRectangle(){
 		return r;
 	}

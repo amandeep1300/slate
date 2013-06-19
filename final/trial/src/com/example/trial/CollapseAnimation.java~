@@ -19,7 +19,7 @@ import android.view.View;
 	        ANIMATION_DURATION = 1;
         	this.FromWidth = lyp.width;
 	        this.ToWidth = lyp.width;
-	        setDuration(ANIMATION_DURATION); // setting the duration of animation
+	        setDuration(ANIMATION_DURATION);
 	        setRepeatCount(10);
 	        setFillAfter(false);
 	        setInterpolator(new AccelerateInterpolator());
@@ -33,8 +33,7 @@ import android.view.View;
 			// TODO Auto-generated method stub
 			
 		}
-		public void onAnimationStart(Animation animation) // starting the animation
- {
+		public void onAnimationStart(Animation animation) {
 			// TODO Auto-generated method stub
 			LayoutParams lyp =  view.getLayoutParams();
 	        lyp.height = 0;

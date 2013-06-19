@@ -22,9 +22,9 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 public class ColorPicker extends Activity implements OnClickListener{
 
 	private Button okBtn;
-	private SeekBar redSeekBar; // here we are declaring seekbar which can increase or decrease red color value
-	private SeekBar greenSeekBar;// here we are declaring seekbar which can increase or decrease green color value
-	private SeekBar blueSeekBar; // here we are declaring seekbar which can increase or decrease blue color value
+	private SeekBar redSeekBar;
+	private SeekBar greenSeekBar;
+	private SeekBar blueSeekBar;
 	private EditText redEditText;
 	private EditText greenEditText;
 	private EditText blueEditText;

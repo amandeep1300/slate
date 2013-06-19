@@ -138,7 +138,7 @@ public class Slate extends Activity implements OnTouchListener, OnClickListener,
     // below objects are used to display popup menu when save button is clicked
     private LayoutInflater inflater;
 	private PopupWindow pw;
-	private View popupView;// loading sound file
+	private View popupView;
 	
 	
     @Override

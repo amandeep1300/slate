@@ -5,8 +5,8 @@ import com.example.trial.Shape;
 import android.graphics.Path;
 
 public class Line extends Shape{
-	private Point begin;// used for calculating begining point
-    private Point end;// used for calculating end point
+	private Point begin;
+    private Point end;
     public postext area;
     public Line(){
     	super();
@@ -21,26 +21,21 @@ public class Line extends Shape{
     //path_of_shape.lineTo(end.getX(),end.getY());
     }
     
-    // Assign a new path, or null to have none. 
     public void setPath(Path path){
     	path_of_shape = path;
     }
     
     public Point getBegin(){
-    	return begin; // returning the begining point
+    	return begin;
     }
     
     public Point getEnd(){
-    	return end; // returning the end point
+    	return end;
     }
-
-    // setting the begining point
     public void setBegin(Point _begin){
     begin = _begin;	
     }
     
-
-     // setting the end point
     public void setEnd(Point _end){
     	end = _end;
     }
