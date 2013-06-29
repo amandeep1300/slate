@@ -142,12 +142,13 @@ public final class R {
         public static final int settings2=0x7f020062;
         public static final int shapes=0x7f020063;
         public static final int shapes2=0x7f020064;
-        public static final int viewimage=0x7f020065;
-        public static final int viewimage2=0x7f020066;
-        public static final int writer=0x7f020067;
-        public static final int writer1=0x7f020068;
-        public static final int writer2=0x7f020069;
-        public static final int yellow=0x7f02006a;
+        public static final int splash=0x7f020065;
+        public static final int viewimage=0x7f020066;
+        public static final int viewimage2=0x7f020067;
+        public static final int writer=0x7f020068;
+        public static final int writer1=0x7f020069;
+        public static final int writer2=0x7f02006a;
+        public static final int yellow=0x7f02006b;
     }
     public static final class id {
         public static final int Button01=0x7f0a001a;
@@ -205,6 +206,7 @@ public final class R {
         public static final int popup_menu=0x7f030009;
         public static final int popup_vertical=0x7f03000a;
         public static final int seek_bar_preference=0x7f03000b;
+        public static final int splash=0x7f03000c;
     }
     public static final class menu {
         public static final int menu=0x7f090000;

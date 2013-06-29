@@ -1188,7 +1188,7 @@ public void onActivityResult(int requestcode, int resultcode, Intent result ) {
 	        				
 	        				if(shapemenuclicked == true )
 	        				{
-	        			    PhonePhone
+	        			    
 		        			
 	        					if(ShapeObject_to_be_created == ShapeLine)
                                                          // in this code its calculating the line 
